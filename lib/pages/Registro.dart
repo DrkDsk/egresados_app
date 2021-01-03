@@ -33,22 +33,27 @@ class _RegisterPage extends State<Register>{
       'password': password
     };
     if(password == password2){
-      var response = await http.post("http://192.168.1.67:8000/api/register",body: data);
-      if(response.statusCode == 200){
-        var jsonResponse = json.decode(response.body);
-        if(jsonResponse != null){
-          setState(() { isLoading = false; });
-          sharedPreferences.setString('token', jsonResponse['token']);
-          sharedPreferences.setString('email', jsonResponse['email']);
-          sharedPreferences.setInt('id', jsonResponse['id']);
-          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (Route <dynamic> route) => false);
+      try{
+        var response = await http.post("http:192.168.1.68:8000/api/register",body: data);
+        if(response.statusCode == 200){
+          var jsonResponse = json.decode(response.body);
+          if(jsonResponse != null){
+            setState(() { isLoading = false; });
+            sharedPreferences.setString('token', jsonResponse['token']);
+            sharedPreferences.setString('email', jsonResponse['email']);
+            sharedPreferences.setInt('id', jsonResponse['id']);
+            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (Route <dynamic> route) => false);
+          }
+        }
+        else if(response.statusCode == 401){
+          setState(() {
+            isLoading = false;
+            mensaje = "Usuario Registrado";
+          });
         }
       }
-      else if(response.statusCode == 401){
-        setState(() {
-          isLoading = false;
-          mensaje = "Usuario Registrado";
-        });
+      catch (e){
+
       }
     }
     else{setState(() {
@@ -62,7 +67,7 @@ class _RegisterPage extends State<Register>{
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: new AppBar(title: Text('Registro de Usuarios')),
+      appBar: new AppBar(title: Text('Registro')),
       body: Container(
         child: isLoading ? Center(child: CircularProgressIndicator()) : ListView(
           children: [
