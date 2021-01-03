@@ -4,6 +4,7 @@ import 'package:app_egresados/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Formulario.dart';
 import 'MyDrawer.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,6 +22,7 @@ class _TramiteView extends State<Tramite>{
 
   List listTramites = [];
   bool isLoading = true;
+  bool sinTramites = false;
   String mensaje = "";
 
   getTramites() async {
@@ -31,11 +33,19 @@ class _TramiteView extends State<Tramite>{
     setState(() {isLoading = true;});
 
     try{
-      var tramites = await http.get("http://192.168.1.67:8000/api/getTramites/"+id);
-      if(tramites.statusCode == 200) setState(() {
-        listTramites = json.decode(tramites.body);
-        isLoading = false;
-      });
+      var tramites = await http.get("http://192.168.1.68:8000/api/getTramites/"+id);
+      if(tramites.statusCode == 200){
+        setState(() {
+          listTramites = json.decode(tramites.body);
+          isLoading = false;
+        });
+      }
+      else if(tramites.statusCode == 401){
+        setState(() {
+          isLoading = false;
+          sinTramites = true;
+        });
+      }
     }
     catch (e){
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
@@ -47,7 +57,7 @@ class _TramiteView extends State<Tramite>{
     String id = sharedPreferences.getInt('id').toString();
     Map data = {'tipo':nameTramite, 'id':id};
 
-    var tramite = await http.post("http://192.168.1.67:8000/api/postTramite",body: data);
+    var tramite = await http.post("http://192.168.1.68:8000/api/postTramite",body: data);
     if(tramite.statusCode == 200){
       setState(() {
         isLoading = false;
@@ -72,7 +82,10 @@ class _TramiteView extends State<Tramite>{
         ListView(
           children: [
             header(),
-            noTramites()
+            if(sinTramites)
+              noTramites("Debes llenar el registro \nde la Sección Formulario")
+            else
+              noTramites("No tienes trámites pendientes")
           ],
         )) : ListView.separated(
           padding: const EdgeInsets.all(8),
@@ -84,7 +97,6 @@ class _TramiteView extends State<Tramite>{
                 children: [
                   Text("${listTramites[index]["name"]}",style: TextStyle(
                     fontSize: 18,
-                    fontFamily: 'Courier'
                   )),
                   RaisedButton(
                     color: Colors.blue,
@@ -106,24 +118,13 @@ class _TramiteView extends State<Tramite>{
   }
 }
 
-Container header(){
-  return Container(
-    margin: EdgeInsets.only(top: 40.0),
-    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-    height: 100,
-    decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/ittg_logo.png'),
-        )
-    ),
-  );
-}
 
-Container noTramites(){
+
+Container noTramites(String registrado){
   return Container(
     margin: EdgeInsets.only(top: 40),
     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-    child: Center(child: Text("No Tienes Trámites Pendientes",style: TextStyle(
+    child: Center(child: Text(registrado,style: TextStyle(
       color: Colors.green[500],
       fontWeight: FontWeight.bold,
       fontSize: 20
