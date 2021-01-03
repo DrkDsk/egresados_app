@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
+import 'Formulario.dart';
 import 'SendEmail.dart';
 
 class LoginPage extends StatefulWidget{
@@ -31,7 +32,7 @@ class _LoginPageState extends State<LoginPage>{
       'password' : password
     };
 
-    var response = await http.post("http://192.168.1.67:8000/api/login",body: data);
+    var response = await http.post("http://192.168.1.68:8000/api/login",body: data);
     if(response.statusCode == 200){
       var jsonResponse = json.decode(response.body);
       if(jsonResponse != null){
@@ -64,19 +65,6 @@ class _LoginPageState extends State<LoginPage>{
             forgotPassword()
           ],
         ),
-      ),
-    );
-  }
-
-  Container header(){
-    return Container(
-      margin: EdgeInsets.only(top: 40.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      height: 100,
-      decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/ittg_logo.png'),
-          )
       ),
     );
   }
