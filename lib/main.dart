@@ -1,7 +1,9 @@
+import 'package:app_egresados/pages/Citas.dart';
 import 'package:app_egresados/pages/MyDrawer.dart';
 import 'package:app_egresados/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'pages/Formulario.dart';
 
 void main() {
   runApp(MyApp());
@@ -48,18 +50,39 @@ class _MyHomePageState extends State<MyHomePage> {
               (Route<dynamic> route) => false);
   }
 
+  GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _drawerKey,
       appBar: AppBar(
         title: Text('Registro de Titulación de Egresados',
             style: TextStyle(color: Colors.white)),
       ),
-      body: Center(
-        child: Container(
-          child: Center(child: Text('Bienvenido')),
+      body: Container(
+        padding: EdgeInsets.only(left: 25),
+        child: ListView(
+          children: [
+            header(),
+            Padding(padding: EdgeInsets.only(bottom: 40)),
+            Text('Bienvenido a la Aplicación de \nRegistro de Titulación de Egresados',style:
+              TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 22)),
+            Padding(padding: EdgeInsets.only(bottom: 60)),
+            MaterialButton(onPressed: (){_drawerKey.currentState.openDrawer();},
+              child: Text('1) Registrate en la Sección Formulario para Actualizar tu información',style: TextStyle(
+                color: Colors.teal[300],fontWeight: FontWeight.bold, fontSize: 20))),
+            Divider(height: 60),
+            MaterialButton(onPressed: (){_drawerKey.currentState.openDrawer();},
+                child: Text('2) Dirígite a la Sección Trámites para conocer tus Trámites Disponibles',style: TextStyle(
+                    color: Colors.teal[300],fontWeight: FontWeight.bold, fontSize: 20))),
+            Divider(height: 60,),
+            MaterialButton(onPressed: (){_drawerKey.currentState.openDrawer();},
+                child: Text('3) Dirígite a la Sección Citas para conocer las Citas que tienes de Cada Trámite Solicitado',style: TextStyle(
+                    color: Colors.teal[300],fontWeight: FontWeight.bold, fontSize: 20))),
+          ],
         ),
-      ),
+      )
+      ,
       drawer: MyDrawer(),
     );
   }
