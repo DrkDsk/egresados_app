@@ -60,18 +60,8 @@ class _EditFormularioPage extends State<EditFormulario>{
     email = controllerEmailAlternativo.text;
     telefono_casa = controllerTelefonoCasa.text;
 
-    print("telefono open?");
-    print(visibleTelefonoCasa);
-    print("email open?");
-    print(visibleMailAlternativo);
-
-    /*if (!visibleMailAlternativo) email = "";
-    else if (!visibleTelefonoCasa) telefono_casa = "";
-
-    print("\n\n\n");
-    print(email);
-    print(telefono_casa);
-     */
+    if (!visibleMailAlternativo) email = "";
+    if (!visibleTelefonoCasa) telefono_casa = "";
 
     Map data = {
       'name' : controllerName.text,
@@ -85,7 +75,7 @@ class _EditFormularioPage extends State<EditFormulario>{
     };
 
     try{
-      final response = await http.patch("http://192.168.1.67:8000/api/updateFormulario/"+id,body: data);
+      final response = await http.patch("http://ittgegresados.online/api/updateFormulario/"+id,body: data);
       if(response.statusCode == 200){
         setState(() { isLoading = false; });
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => MyHomePage()), (Route<dynamic>route) => false);

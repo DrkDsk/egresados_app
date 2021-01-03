@@ -61,11 +61,10 @@ class _FormularioView extends State<Formulario>{
   checkEstadoRegistro() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
-
     setState(() {isLoading = true;});
 
     try{
-      var response = await http.get('http://192.168.1.67:8000/api/estadoFormulario/'+id);
+      var response = await http.get('http://ittgegresados.online/api/estadoFormulario/'+id);
       if(response.statusCode == 200){
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => EditFormulario()), (Route<dynamic>route) => false);
       }
@@ -83,11 +82,6 @@ class _FormularioView extends State<Formulario>{
     email = controllerEmailAlternativo.text;
     telefono_casa = controllerTelefonoCasa.text;
 
-    print("telefono open?");
-    print(visibleTelefonoCasa);
-    print("email open?");
-    print(visibleMailAlternativo);
-
     if (visibleMailAlternativo == false) email = "";
     if (visibleTelefonoCasa == false) telefono_casa = "";
 
@@ -103,12 +97,8 @@ class _FormularioView extends State<Formulario>{
       'carrera' : _carreras_valor
     };
 
-    print("Datos:\n\n\n");
-    print(email);
-    print(telefono_casa);
-
     try{
-      final response = await http.post("http://192.168.1.67:8000/api/formulario",body: data);
+      final response = await http.post("http://ittgegresados.online/api/formulario",body: data);
       if(response.statusCode == 200){
         setState(() { isLoading = false; });
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => MyHomePage()), (Route<dynamic>route) => false);
@@ -145,18 +135,7 @@ class _FormularioView extends State<Formulario>{
     );
   }
 
-  Container header(){
-    return Container(
-      margin: EdgeInsets.only(top: 40.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      height: 100,
-      decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/ittg_logo.png'),
-          )
-      ),
-    );
-  }
+
 
   Container formuRegistro(){
     return Container(
@@ -434,4 +413,17 @@ class _FormularioView extends State<Formulario>{
       ),
     );
   }
+}
+
+Container header(){
+  return Container(
+    margin: EdgeInsets.only(top: 40.0),
+    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+    height: 100,
+    decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/ittg_logo.png'),
+        )
+    ),
+  );
 }
