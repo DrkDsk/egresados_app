@@ -3,6 +3,7 @@ import 'package:app_egresados/errorPages/ErrorPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Formulario.dart';
 import 'MyDrawer.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,6 +20,7 @@ class _CitasView extends State<Citas>{
   }
 
   bool isLoading = false;
+  bool estadoCitas = false;
   List listaCitas = [];
 
   getCitas() async{
@@ -28,11 +30,17 @@ class _CitasView extends State<Citas>{
     setState(() {isLoading = true;});
 
     try{
-      var citas = await http.get("http://192.168.1.67:8000/api/getCitas/"+id);
+      var citas = await http.get("http://ittgegresados.online/api/getCitas/"+id);
       if (citas.statusCode == 200){
         setState(() {
           isLoading = false;
           listaCitas = json.decode(citas.body);
+        });
+      }
+      else if(citas.statusCode == 401){
+        setState(() {
+          isLoading = false;
+          estadoCitas = true;
         });
       }
     }
@@ -51,7 +59,10 @@ class _CitasView extends State<Citas>{
           ListView(
             children: [
               header(),
-              noCitas()
+              if (estadoCitas)
+                noCitas("Debes llenar el registro \nde la Sección Formulario")
+              else
+                noCitas("No Tienes Citas Pendientes")
             ],
           )) : ListView.separated(
             padding: const EdgeInsets.all(8),
@@ -65,7 +76,7 @@ class _CitasView extends State<Citas>{
                     Padding(padding: EdgeInsets.symmetric(vertical: 4)),
                     Text("Fecha: ${listaCitas[index]["fecha"]}",style: TextStyle(fontSize: 14)),
                     Padding(padding: EdgeInsets.symmetric(vertical: 4)),
-                    Text("Tipo: ${listaCitas[index]["tipo"]}",style: TextStyle(fontSize: 14)),
+                    Text("Trámite: ${listaCitas[index]["tipo"]}",style: TextStyle(fontSize: 14)),
                   ],
                 )),
               );
@@ -82,24 +93,13 @@ class _CitasView extends State<Citas>{
   }
 }
 
-Container header(){
-  return Container(
-    margin: EdgeInsets.only(top: 40.0),
-    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-    height: 100,
-    decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/ittg_logo.png'),
-        )
-    ),
-  );
-}
 
-Container noCitas(){
+
+Container noCitas(String estadoCitas){
   return Container(
     margin: EdgeInsets.only(top: 40),
     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-    child: Center(child: Text("No Tienes Citas Pendientes",style: TextStyle(
+    child: Center(child: Text(estadoCitas,style: TextStyle(
         color: Colors.green[500],
         fontWeight: FontWeight.bold,
         fontSize: 20
