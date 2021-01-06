@@ -7,6 +7,8 @@ import 'EditFormulario.dart';
 import 'MyDrawer.dart';
 import 'package:http/http.dart' as http;
 
+import 'Registro.dart';
+
 class Formulario extends StatefulWidget{
   @override
   _FormularioView createState() => _FormularioView();
@@ -64,7 +66,7 @@ class _FormularioView extends State<Formulario>{
     setState(() {isLoading = true;});
 
     try{
-      var response = await http.get('http://ittgegresados.online/api/estadoFormulario/'+id);
+      var response = await http.get('http://192.168.1.68:8000/api/estadoFormulario/'+id);
       if(response.statusCode == 200){
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => EditFormulario()), (Route<dynamic>route) => false);
       }
@@ -98,7 +100,7 @@ class _FormularioView extends State<Formulario>{
     };
 
     try{
-      final response = await http.post("http://ittgegresados.online/api/formulario",body: data);
+      final response = await http.post("http://192.168.1.68:8000/api/formulario",body: data);
       if(response.statusCode == 200){
         setState(() { isLoading = false; });
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => MyHomePage()), (Route<dynamic>route) => false);
@@ -128,14 +130,12 @@ class _FormularioView extends State<Formulario>{
             formSection(),
             selectCarrera(),
             buttonsection(),
-            messajeSection()
+            mensajeSection()
           ],
         ),
       ),
     );
   }
-
-
 
   Container formuRegistro(){
     return Container(
@@ -143,7 +143,6 @@ class _FormularioView extends State<Formulario>{
         height: 40,
         child: Center(
           child: Text('Registro de formulario',style: TextStyle(
-              fontFamily: 'Courier',
               fontSize: 30
           )),
         )
@@ -240,6 +239,7 @@ class _FormularioView extends State<Formulario>{
                                     return null;
                                   },
                                   keyboardType: TextInputType.number,
+                                  maxLength: 8,
                                   controller: controllerNumeroDeControl,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
@@ -256,6 +256,7 @@ class _FormularioView extends State<Formulario>{
                             children: [
                               Container(
                                 child: TextFormField(
+                                  maxLength: 10,
                                   keyboardType: TextInputType.number,
                                   validator: (value){
                                     if(value.isEmpty) return "Teléfono móvil requerido";
@@ -280,6 +281,7 @@ class _FormularioView extends State<Formulario>{
                                visible: visibleTelefonoCasa,
                                child: Container(
                                  child: TextFormField(
+                                   maxLength: 10,
                                    keyboardType: TextInputType.number,
                                    validator: (value){
                                      if(value.isEmpty) return "Teléfono de Casa Requerido";
@@ -403,7 +405,7 @@ class _FormularioView extends State<Formulario>{
     );
   }
 
-  Container messajeSection(){
+  Container mensajeSection(){
     return Container(
       child: Center(
         child: Text(mensaje,style: TextStyle(
@@ -413,17 +415,4 @@ class _FormularioView extends State<Formulario>{
       ),
     );
   }
-}
-
-Container header(){
-  return Container(
-    margin: EdgeInsets.only(top: 40.0),
-    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-    height: 100,
-    decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/ittg_logo.png'),
-        )
-    ),
-  );
 }
