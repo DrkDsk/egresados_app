@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:app_egresados/pages/Registro.dart';
+import 'package:app_egresados/errorPages/ErrorPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../main.dart';
+import 'Registro.dart';
+import 'ResetPassword.dart';
 import 'login.dart';
 
 class SendEmail extends StatefulWidget{
@@ -14,9 +15,31 @@ class SendEmail extends StatefulWidget{
 
 class _SendEmail extends State<SendEmail>{
 
+  String mensaje = "";
   bool isLoading = false;
   final formKey = GlobalKey<FormState>();
   TextEditingController controllerEmail = new TextEditingController();
+
+  sendMail(String email) async{
+
+    Map data = {'email' : email};
+
+    try{
+      var response = await http.post("http://192.168.1.68:8000/api/reset/password",body: data);
+      if(response.statusCode == 200){
+        var jsonResponse = json.decode(response.body);
+        if(jsonResponse != null){
+          setState(() { isLoading = false; });
+          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+          sharedPreferences.setString("emailToReset", jsonResponse['email']);
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => ResetPassword()), (Route <dynamic> route) => false);
+        }
+      }
+    }
+    catch(e){
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +57,9 @@ class _SendEmail extends State<SendEmail>{
             textSendEmail(),
             textForm(),
             form(),
+            mensajeSection()
           ],
         ),
-      ),
-    );
-  }
-
-  Container header(){
-    return Container(
-      margin: EdgeInsets.only(top: 40.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      height: 100,
-      decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/ittg_logo.png'),
-          )
       ),
     );
   }
@@ -62,9 +73,19 @@ class _SendEmail extends State<SendEmail>{
             style: TextStyle(
                 color: Colors.black,
                 fontSize: 30,
-                fontFamily: 'Courier'
             ),),
         )
+    );
+  }
+
+  Container mensajeSection(){
+    return Container(
+      child: Center(
+        child: Text(mensaje,style: TextStyle(
+            color: Colors.red,
+            fontSize: 15
+        ),),
+      ),
     );
   }
 
@@ -72,7 +93,7 @@ class _SendEmail extends State<SendEmail>{
     return Container(
       child: Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10.0),
+          padding: EdgeInsets.symmetric(vertical: 20.0),
           child: Text(
             'Ingresa el Correo Electrónico asociado a tu Cuenta'
           ),
@@ -85,11 +106,11 @@ class _SendEmail extends State<SendEmail>{
     return Form(
       key: formKey,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 15.0,vertical: 0.0),
+        padding: EdgeInsets.symmetric(horizontal: 15.0),
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.all(8),
+              padding: EdgeInsets.all(10),
               child: Column(
                 children: [
                   Container(
@@ -127,7 +148,7 @@ class _SendEmail extends State<SendEmail>{
                       ],
                     ),
                   ),
-                  SizedBox(height: 80,),
+                  SizedBox(height: 50),
                   Container(
                     child: RaisedButton(
                       child: Text('Enviar Correo Electrónico',style: TextStyle(
@@ -137,6 +158,7 @@ class _SendEmail extends State<SendEmail>{
                       onPressed: (){
                         if(formKey.currentState.validate()){
                           setState(() { isLoading = true; });
+                          sendMail(controllerEmail.text);
                         }
                       },
                     ),
@@ -149,5 +171,4 @@ class _SendEmail extends State<SendEmail>{
       ),
     );
   }
-  
 }
