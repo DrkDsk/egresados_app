@@ -1,9 +1,8 @@
-import 'package:app_egresados/pages/Citas.dart';
 import 'package:app_egresados/pages/MyDrawer.dart';
+import 'package:app_egresados/pages/Registro.dart';
 import 'package:app_egresados/pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'pages/Formulario.dart';
 
 void main() {
   runApp(MyApp());
