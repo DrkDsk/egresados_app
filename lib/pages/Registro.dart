@@ -1,3 +1,4 @@
+import 'package:app_egresados/errorPages/ErrorPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -5,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import 'login.dart';
-
 
 class Register extends StatefulWidget{
   @override
@@ -34,7 +34,7 @@ class _RegisterPage extends State<Register>{
     };
     if(password == password2){
       try{
-        var response = await http.post("http:192.168.1.68:8000/api/register",body: data);
+        var response = await http.post("http://192.168.1.68:8000/api/register",body: data);
         if(response.statusCode == 200){
           var jsonResponse = json.decode(response.body);
           if(jsonResponse != null){
@@ -53,7 +53,7 @@ class _RegisterPage extends State<Register>{
         }
       }
       catch (e){
-
+        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
       }
     }
     else{setState(() {
@@ -67,7 +67,6 @@ class _RegisterPage extends State<Register>{
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: new AppBar(title: Text('Registro')),
       body: Container(
         child: isLoading ? Center(child: CircularProgressIndicator()) : ListView(
           children: [
@@ -82,26 +81,12 @@ class _RegisterPage extends State<Register>{
     );
   }
 
-  Container header(){
-    return Container(
-      margin: EdgeInsets.only(top: 40.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      height: 100,
-      decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/ittg_logo.png'),
-          )
-      ),
-    );
-  }
-
   Container textRegistro(){
     return Container(
       margin: EdgeInsets.only(top: 30),
       height: 40,
       child: Center(
         child: Text('Registro de Usuarios',style: TextStyle(
-          fontFamily: 'Courier',
           fontSize: 30
         )),
       )
@@ -252,4 +237,17 @@ class _RegisterPage extends State<Register>{
       ),
     );
   }
+}
+
+Container header(){
+  return Container(
+    margin: EdgeInsets.only(top: 40.0),
+    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+    height: 100,
+    decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/ittg_logo.png'),
+        )
+    ),
+  );
 }

@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:app_egresados/errorPages/ErrorPage.dart';
 import 'package:app_egresados/pages/Registro.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
-import 'Formulario.dart';
 import 'SendEmail.dart';
 
 class LoginPage extends StatefulWidget{
@@ -32,22 +32,27 @@ class _LoginPageState extends State<LoginPage>{
       'password' : password
     };
 
-    var response = await http.post("http://192.168.1.68:8000/api/login",body: data);
-    if(response.statusCode == 200){
-      var jsonResponse = json.decode(response.body);
-      if(jsonResponse != null){
-        setState(() { isLoading = false; });
-        sharedPreferences.setString('token', jsonResponse['token']);
-        sharedPreferences.setString('email', jsonResponse['email']);
-        sharedPreferences.setInt('id', jsonResponse['id']);
-        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (Route<dynamic> route) => false);
+    try{
+      var response = await http.post("http://192.168.1.68:8000/api/login",body: data);
+      if(response.statusCode == 200){
+        var jsonResponse = json.decode(response.body);
+        if(jsonResponse != null){
+          setState(() { isLoading = false; });
+          sharedPreferences.setString('token', jsonResponse['token']);
+          sharedPreferences.setString('email', jsonResponse['email']);
+          sharedPreferences.setInt('id', jsonResponse['id']);
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (Route<dynamic> route) => false);
+        }
+      }
+      else if(response.statusCode == 401){
+        setState(() {
+          isLoading = false;
+          mensaje = "Correo Electrónico o Contraseña incorrecta";
+        });
       }
     }
-    else if(response.statusCode == 401){
-      setState(() {
-        isLoading = false;
-        mensaje = "Correo Electrónico o Contraseña incorrecta";
-      });
+    catch (e){
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
     }
   }
 
@@ -78,7 +83,6 @@ class _LoginPageState extends State<LoginPage>{
           style: TextStyle(
               color: Colors.black,
               fontSize: 35,
-              fontFamily: 'Courier'
           ),),
       )
     );
