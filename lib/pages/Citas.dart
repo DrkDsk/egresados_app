@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'package:app_egresados/errorPages/ErrorPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'Formulario.dart';
 import 'MyDrawer.dart';
 import 'package:http/http.dart' as http;
+
+import 'Registro.dart';
 
 class Citas extends StatefulWidget{
   @override
@@ -14,38 +14,91 @@ class Citas extends StatefulWidget{
 
 class _CitasView extends State<Citas>{
 
+  bool isLoading = true;
+  bool sinCitas = false;
+  double topContainer = 0;
+  List<Widget>listaCitas = [];
+
   void initState(){
     super.initState();
     getCitas();
   }
 
-  bool isLoading = false;
-  bool estadoCitas = false;
-  List listaCitas = [];
-
   getCitas() async{
+    setState(() {isLoading = true;});
+    List<dynamic> responseList = [];
+    List<Widget> listItems = [];
+
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
 
-    setState(() {isLoading = true;});
+    var citas = await http.get("http://192.168.1.68:8000/api/getCitas/"+id);
+    if (citas.statusCode == 200){
+      setState(() {
+        responseList = json.decode(citas.body);
+        isLoading = false;
+      });
 
-    try{
-      var citas = await http.get("http://ittgegresados.online/api/getCitas/"+id);
-      if (citas.statusCode == 200){
-        setState(() {
-          isLoading = false;
-          listaCitas = json.decode(citas.body);
-        });
-      }
-      else if(citas.statusCode == 401){
-        setState(() {
-          isLoading = false;
-          estadoCitas = true;
-        });
-      }
+      responseList.forEach((cita) {
+        listItems.add(Container(
+          height: 130,
+          margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15),
+          decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.white, boxShadow: [
+            BoxShadow(color: Colors.black.withAlpha(100),blurRadius: 10.0),
+          ]),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        cita["descripcion"],
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          "Fecha: ",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)
+                        ),
+                        Text(
+                          cita["fecha"],
+                          style: const TextStyle(fontSize: 17, color: Colors.black87),
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                            "Trámite: ",
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)
+                        ),
+                        Text(
+                            cita["tipo"],
+                            style: const TextStyle(fontSize: 17, color: Colors.black87)
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 10.0),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ));
+      });
+      setState(() {listaCitas = listItems;});
     }
-    catch (e){
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
+    else if(citas.statusCode == 401){
+      setState(() {
+        sinCitas = true;
+        isLoading = false;
+      });
     }
   }
 
@@ -55,51 +108,52 @@ class _CitasView extends State<Citas>{
       appBar: new AppBar(title: Text('Calendario de Citas')),
       drawer: MyDrawer(),
       body: Container(
-          child: listaCitas.length == 0 ? Center(child: isLoading ? Center(child: CircularProgressIndicator()):
-          ListView(
+          child: isLoading ? Center(child: CircularProgressIndicator()) : sinCitas ? Center(child: ListView(
             children: [
               header(),
-              if (estadoCitas)
-                noCitas("Debes llenar el registro \nde la Sección Formulario")
-              else
-                noCitas("No Tienes Citas Pendientes")
+              noCitas()
             ],
-          )) : ListView.separated(
-            padding: const EdgeInsets.all(8),
+          )) :
+          ListView.builder(
+            padding: const EdgeInsets.all(6),
             itemCount: listaCitas.length,
             itemBuilder: (BuildContext context,int index){
-              return Container(
-                height: 80,
-                child: Center(child: Column(
-                  children: [
-                    Text("Cita: ${listaCitas[index]["descripcion"]}",style: TextStyle(fontSize: 18)),
-                    Padding(padding: EdgeInsets.symmetric(vertical: 4)),
-                    Text("Fecha: ${listaCitas[index]["fecha"]}",style: TextStyle(fontSize: 14)),
-                    Padding(padding: EdgeInsets.symmetric(vertical: 4)),
-                    Text("Trámite: ${listaCitas[index]["tipo"]}",style: TextStyle(fontSize: 14)),
-                  ],
-                )),
+              double scale = 1.0;
+              if (topContainer > 0.5) {
+                scale = index + 0.5 - topContainer;
+                if (scale < 0) {
+                  scale = 0;
+                } else if (scale > 1) {
+                  scale = 1;
+                }
+              }
+              return Opacity(
+                opacity: scale,
+                child: Transform(
+                  transform: Matrix4.identity()..scale(scale,scale),
+                  alignment: Alignment.bottomCenter,
+                  child: Align(
+                    heightFactor: 0.9,
+                    alignment: Alignment.topCenter,
+                    child: listaCitas[index],
+                  ),
+                ),
               );
             },
-            separatorBuilder: (BuildContext context, int index) => const Divider(
-              color: Colors.blueAccent,
-              indent: 20.0,
-              endIndent: 20.0,
-              thickness: 1,
-            ),
           )
       ),
     );
   }
 }
 
-
-
-Container noCitas(String estadoCitas){
+Container noCitas(){
   return Container(
-    margin: EdgeInsets.only(top: 40),
-    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-    child: Center(child: Text(estadoCitas,style: TextStyle(
+    margin: EdgeInsets.only(top:50,left: 20,right: 20),
+    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+    decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20.0)),color: Colors.white, boxShadow: [
+      BoxShadow(color: Colors.black.withAlpha(100),blurRadius: 10.0),
+    ]),
+    child: Center(child: Text("No Tienes Citas Pendientes",style: TextStyle(
         color: Colors.green[500],
         fontWeight: FontWeight.bold,
         fontSize: 20
