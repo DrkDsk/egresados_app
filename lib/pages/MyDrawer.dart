@@ -30,7 +30,6 @@ class _MyDrawer extends State<MyDrawer> {
   void logOut() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String token = sharedPreferences.getString('token');
-
     Map data = {'token' : token};
 
     try{
@@ -38,15 +37,15 @@ class _MyDrawer extends State<MyDrawer> {
       if (response.statusCode == 200){
         SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
         sharedPreferences.clear();
+        setState(() {isLoading = false;});
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (route) => false);
-        isLoading = false;
       }
     }
     catch (e){
+      setState(() {isLoading = false;});
       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
       sharedPreferences.clear();
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (route) => false);
-      isLoading = false;
     }
   }
   
@@ -128,7 +127,7 @@ class _MyDrawer extends State<MyDrawer> {
                         leading: Icon(Icons.account_circle),
                         title: Text("Cerrar Sesión"),
                         onTap: (){
-                          isLoading = true;
+                          setState(() {isLoading = true;});
                           logOut();
                         },
                       )
