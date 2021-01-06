@@ -75,7 +75,7 @@ class _EditFormularioPage extends State<EditFormulario>{
     };
 
     try{
-      final response = await http.patch("http://ittgegresados.online/api/updateFormulario/"+id,body: data);
+      final response = await http.patch("http://192.168.1.68:8000/api/updateFormulario/"+id,body: data);
       if(response.statusCode == 200){
         setState(() { isLoading = false; });
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => MyHomePage()), (Route<dynamic>route) => false);
@@ -172,7 +172,6 @@ class _EditFormularioPage extends State<EditFormulario>{
         height: 40,
         child: Center(
           child: Text('Registro de formulario',style: TextStyle(
-              fontFamily: 'Courier',
               fontSize: 30
           )),
         )
