@@ -20,6 +20,9 @@ class _EditFormularioPage extends State<EditFormulario>{
 
   final formKey = GlobalKey<FormState>();
 
+  DateTime _dateTimeInicio;
+  DateTime _dateTimeEgreso;
+
   TextEditingController controllerName = new TextEditingController();
   TextEditingController controllerApellidoPaterno = new TextEditingController();
   TextEditingController controllerApellidoMaterno = new TextEditingController();
@@ -54,6 +57,11 @@ class _EditFormularioPage extends State<EditFormulario>{
   }
 
   formulario() async{
+
+    print("carrera:" + _carreras_valor);
+    print("dateInicio" + _dateTimeInicio.toString());
+    print("dateEgre" + _dateTimeEgreso.toString());
+
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
 
@@ -69,6 +77,8 @@ class _EditFormularioPage extends State<EditFormulario>{
       'apellido2' : controllerApellidoMaterno.text,
       'noControl' : controllerNumeroDeControl.text,
       'movil' : controllerMovil.text,
+      'fechaInicio' : _dateTimeInicio.toString(),
+      'fechaEgreso' : _dateTimeEgreso.toString(),
       'telefono_casa' : telefono_casa,
       'email_alternativo' : email,
       'carrera' : _carreras_valor
@@ -106,6 +116,8 @@ class _EditFormularioPage extends State<EditFormulario>{
             formuRegistro(),
             formSection(),
             selectCarrera(),
+            selectFechaIngreso(),
+            selectFechaEgreso(),
             buttonsection(),
             messajeSection()
           ],
@@ -130,7 +142,7 @@ class _EditFormularioPage extends State<EditFormulario>{
               'tu información, presiona el siguiente botón',style: TextStyle(
             color: Colors.blue[500],
             fontWeight: FontWeight.bold,
-            fontSize: 15
+            fontSize: 18
           ),),
         )
     );
@@ -374,7 +386,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                                 ),),
                             )
                           ],
-                        )
+                        ),
                       ],
                     ),
                   )
@@ -391,9 +403,8 @@ class _EditFormularioPage extends State<EditFormulario>{
   Container selectCarrera(){
     return Container(
       child: Center(child: DropdownButton(
-        hint: Center(child: Text("Seleccione Carrera")),
+        hint: Center(child: _carreras_valor.isEmpty ? Text("Seleccione una Carrera"): Text(_carreras_valor)),
         dropdownColor: Colors.white,
-        value: 'Ing. En Sistemas Computacionales',
         onChanged: (value){
           setState(() {
             _carreras_valor = value;
@@ -405,6 +416,51 @@ class _EditFormularioPage extends State<EditFormulario>{
             child: Text(value),);
         }).toList(),
       )),
+    );
+  }
+
+  Container selectFechaEgreso(){
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 120),
+      child: RaisedButton(
+        color: Colors.blue,
+        onPressed: (){
+          showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2001),
+              lastDate: DateTime(2050))
+              .then((date){
+            setState(() {
+              _dateTimeEgreso = date;
+            });
+          });
+        },
+        child: _dateTimeEgreso == null ? Text("Fecha de Egreso") : Text("Año de Egreso: " + _dateTimeEgreso.year.toString()),
+      ),
+    );
+  }
+
+  Container selectFechaIngreso(){
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 120),
+      child: RaisedButton(
+        color: Colors.blue,
+        onPressed: (){
+          showDatePicker(
+              cancelText: "Cancelar",
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2001),
+              lastDate: DateTime(2050))
+              .then((date){
+            setState(() {
+              _dateTimeInicio = date;
+            });
+          });
+        },
+        child: _dateTimeInicio == null ? Text("Fecha de Inicio") : Text("Año de Ingreso: " + _dateTimeInicio.year.toString()),
+      ),
     );
   }
 
