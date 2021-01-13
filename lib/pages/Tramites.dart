@@ -61,10 +61,11 @@ class _TramiteView extends State<Tramite>{
                     children: [
                       Text(
                         tramite["name"],
-                        style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 5),
                       RaisedButton(
+                        color: Colors.lightBlue,
                         child: Text("Solicitar"),
                         onPressed: (){
                             setState(() {isLoading = true;});
