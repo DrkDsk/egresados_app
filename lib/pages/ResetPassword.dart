@@ -36,7 +36,7 @@ class _ResetPasswordPage extends State<ResetPassword>{
     };
     if(password == password2){
       try{
-        var response = await http.post("http://ittgegresados.online/api/update/password",body: data);
+        var response = await http.post("http://192.168.1.68:8000/api/update/password",body: data);
         if(response.statusCode == 200){
           var jsonResponse = json.decode(response.body);
           if(jsonResponse != null){
@@ -230,12 +230,17 @@ class _ResetPasswordPage extends State<ResetPassword>{
 
   Container mensajeSection(){
     return Container(
-      child: Center(
-        child: Text(mensaje,style: TextStyle(
-          color: Colors.red,
-          fontSize: 15,
-          fontWeight: FontWeight.bold
-        ),),
+      padding: EdgeInsets.only(left: 40,right: 40),
+      child: Wrap(
+        direction: Axis.horizontal,
+        children: [
+          Text(mensaje,style: TextStyle(
+            fontWeight: FontWeight.w400,
+            color: Colors.red,
+            fontSize: 16,
+          ),
+          ),
+        ],
       ),
     );
   }
