@@ -1,5 +1,7 @@
 import 'package:app_egresados/main.dart';
+import 'package:app_egresados/pages/Login.dart';
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Citas.dart';
 import 'Formulario.dart';
@@ -23,6 +25,13 @@ class _MyDrawer extends State<MyDrawer> {
 
   void getInfo() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var token = sharedPreferences.getString("token");
+    if (JwtDecoder.isExpired(token)){
+      sharedPreferences.clear();
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (BuildContext context) => LoginPage()),
+              (Route<dynamic> route) => false);
+    }
     setState(() {email = sharedPreferences.get('email');});
   }
 
