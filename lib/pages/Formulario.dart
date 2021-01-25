@@ -71,7 +71,7 @@ class _FormularioView extends State<ViewFormulario>{
 
     setState(() {isLoading = true;});
     try{
-      var response = await http.get('http://ittgegresados.online/api/estadoFormulario/'+id,
+      var response = await http.get('http://192.168.1.68:8000/api/estadoFormulario/'+id,
           headers: {'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer $token'});
@@ -130,7 +130,7 @@ class _FormularioView extends State<ViewFormulario>{
     };
 
     try{
-      final response = await http.post("http://ittgegresados.online/api/formulario",body: jsonEncode(data),
+      final response = await http.post("http://192.168.1.68:8000/api/formulario",body: jsonEncode(data),
           headers: {'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer $token'}
@@ -143,6 +143,13 @@ class _FormularioView extends State<ViewFormulario>{
         setState(() {
           isLoading = false;
           mensaje = "El formulario ya ha sido registrado";
+          return ;
+        });
+      }
+      else if(response.statusCode == 202){
+        setState(() {
+          isLoading = false;
+          mensaje = json.decode(response.body)[0];
           return ;
         });
       }
@@ -244,6 +251,9 @@ class _FormularioView extends State<ViewFormulario>{
                           ),
                         ),
                         Container(
+                        decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                        ),
                           child: Column(
                             children: [
                               Container(
@@ -264,6 +274,9 @@ class _FormularioView extends State<ViewFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -284,6 +297,9 @@ class _FormularioView extends State<ViewFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -306,6 +322,9 @@ class _FormularioView extends State<ViewFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -313,7 +332,7 @@ class _FormularioView extends State<ViewFormulario>{
                                   maxLength: 10,
                                   keyboardType: TextInputType.phone,
                                   validator: (value){
-                                    if(value.isEmpty) return "Teléfono móvil requerido";
+                                    if(value.isEmpty || value.length != 10) return "Teléfono móvil requerido a 10 Dígitos";
                                     return null;
                                   },
                                   controller: controllerMovil,
@@ -338,7 +357,7 @@ class _FormularioView extends State<ViewFormulario>{
                                     maxLength: 10,
                                     keyboardType: TextInputType.phone,
                                     validator: (value){
-                                      if(value.isEmpty) return "Teléfono de Casa Requerido";
+                                      if(value.isEmpty || value.length != 10) return "Teléfono de Casa requerido a 10 Dígitos";
                                       return null;
                                     },
                                     controller: controllerTelefonoCasa,
@@ -358,6 +377,9 @@ class _FormularioView extends State<ViewFormulario>{
                               },
                             ),
                             Container(
+                              decoration: BoxDecoration(
+                                  border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                              ),
                               padding: EdgeInsets.all(15),
                               child: InkWell(
                                 child: Text("(Teléfono de Casa)",
@@ -374,7 +396,7 @@ class _FormularioView extends State<ViewFormulario>{
                           children: [
                             Container(
                               child: Visibility(
-                                visible: visibleTelefonoCasa,
+                                visible: visibleMailAlternativo,
                                 child: Container(
                                   child: TextFormField(
                                     keyboardType: TextInputType.emailAddress,
@@ -395,7 +417,7 @@ class _FormularioView extends State<ViewFormulario>{
                             Checkbox(
                               value: visibleMailAlternativo,
                               onChanged: (v){
-                                hideTelefonoCasa();
+                                hideMailAlternativo();
                               },
                             ),
                             Container(
@@ -523,12 +545,17 @@ class _FormularioView extends State<ViewFormulario>{
 
   Container mensajeSection(){
     return Container(
-      child: Center(
-        child: Text(mensaje,style: TextStyle(
+      padding: EdgeInsets.only(left: 40,right: 40),
+      child: Wrap(
+        direction: Axis.horizontal,
+        children: [
+          Text(mensaje,style: TextStyle(
             fontWeight: FontWeight.w400,
             color: Colors.red,
-            fontSize: 15
-        ),),
+            fontSize: 16,
+          ),
+          ),
+        ],
       ),
     );
   }

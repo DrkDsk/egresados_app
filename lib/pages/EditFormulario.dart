@@ -76,7 +76,7 @@ class _EditFormularioPage extends State<EditFormulario>{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
     String token = sharedPreferences.getString("token");
-    final response = await http.get("http://ittgegresados.online/api/estadoFormulario/"+id,
+    final response = await http.get("http://192.168.1.68:8000/api/estadoFormulario/"+id,
         headers: {'Content-Type': 'application/json',
                   'Accept': 'application/json',
                   'Authorization': 'Bearer $token'});
@@ -132,12 +132,11 @@ class _EditFormularioPage extends State<EditFormulario>{
 
     try{
       print(token);
-      final response = await http.patch("http://ittgegresados.online/api/updateFormulario/"+id,body: jsonEncode(data),
+      final response = await http.patch("http://192.168.1.68:8000/api/updateFormulario/"+id,body: jsonEncode(data),
           headers: {'Content-Type': 'application/json',
         'Accept': 'application/json',
         'Authorization': 'Bearer $token'}
       );
-
       if(response.statusCode == 200){
         setState(() { isLoading = false; });
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => MyHomePage()), (Route<dynamic>route) => false);
@@ -146,6 +145,13 @@ class _EditFormularioPage extends State<EditFormulario>{
         setState(() {
           isLoading = false;
           mensaje = "No se puede Actualizar el Formulario, \nCargar de nuevo la Sección 'Formulario'";
+        });
+      }
+      else if(response.statusCode == 202){
+        setState(() {
+          isLoading = false;
+          mensaje = json.decode(response.body)[0];
+          return ;
         });
       }
     }
@@ -282,6 +288,9 @@ class _EditFormularioPage extends State<EditFormulario>{
                     child: Column(
                       children: [
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: TextFormField(
                             validator: (value){
                               if(value.isEmpty) return "Nombre Requerido";
@@ -296,6 +305,9 @@ class _EditFormularioPage extends State<EditFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -316,6 +328,9 @@ class _EditFormularioPage extends State<EditFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -336,6 +351,9 @@ class _EditFormularioPage extends State<EditFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -358,6 +376,9 @@ class _EditFormularioPage extends State<EditFormulario>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -365,7 +386,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                                   maxLength: 10,
                                   keyboardType: TextInputType.phone,
                                   validator: (value){
-                                    if(value.isEmpty) return "Teléfono móvil requerido";
+                                    if(value.isEmpty || value.length != 10) return "Teléfono móvil requerido a 10 Dígitos";
                                     return null;
                                   },
                                   controller: controllerMovil,
@@ -390,7 +411,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                                     maxLength: 10,
                                     keyboardType: TextInputType.phone,
                                     validator: (value){
-                                      if(value.isEmpty) return "Teléfono de Casa Requerido";
+                                      if(value.isEmpty || value.length != 10) return "Teléfono de Casa Requerido a 10 Dígitos";
                                       return null;
                                     },
                                     controller: controllerTelefonoCasa,
@@ -410,6 +431,9 @@ class _EditFormularioPage extends State<EditFormulario>{
                               },
                             ),
                             Container(
+                              decoration: BoxDecoration(
+                                  border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                              ),
                               padding: EdgeInsets.all(15),
                               child: InkWell(
                                 child: Text("(Teléfono de Casa)",
@@ -426,7 +450,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                           children: [
                             Container(
                               child: Visibility(
-                                visible: visibleTelefonoCasa,
+                                visible: visibleMailAlternativo,
                                 child: Container(
                                   child: TextFormField(
                                     keyboardType: TextInputType.emailAddress,
@@ -447,7 +471,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                             Checkbox(
                               value: visibleMailAlternativo,
                               onChanged: (v){
-                                hideTelefonoCasa();
+                                hideMailAlternativo();
                               },
                             ),
                             Container(
@@ -588,12 +612,17 @@ class _EditFormularioPage extends State<EditFormulario>{
 
   Container messageSection(){
     return Container(
-      child: Center(
-        child: Text(mensaje,style: TextStyle(
-          fontWeight: FontWeight.w400,
-          color: Colors.red,
-          fontSize: 16,
-        ),),
+      padding: EdgeInsets.only(left: 40,right: 40),
+      child: Wrap(
+        direction: Axis.horizontal,
+        children: [
+          Text(mensaje,style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: Colors.red,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }
