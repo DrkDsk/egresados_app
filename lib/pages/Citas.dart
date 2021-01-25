@@ -18,7 +18,7 @@ class _CitasView extends State<Citas>{
     String id = sharedPreferences.getInt('id').toString();
     String token = sharedPreferences.getString("token");
 
-    final citas = await http.get("http://ittgegresados.online/api/getCitas/"+id,
+    final citas = await http.get("http://192.168.1.68:8000/api/getCitas/"+id,
         headers: {'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $token'}
