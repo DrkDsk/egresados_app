@@ -67,7 +67,7 @@ class _MyDrawer extends State<MyDrawer> {
               onTap: (){
                 Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (
-                        BuildContext context) => Formulario()),
+                        BuildContext context) => ViewFormulario()),
                         (Route<dynamic> route) => false);
               },
             ),
@@ -75,7 +75,7 @@ class _MyDrawer extends State<MyDrawer> {
               onTap: (){
                 Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (
-                      BuildContext context) => Tramite()),
+                      BuildContext context) => Tramites()),
                         (Route<dynamic> route) => false);
               },
               leading: new Icon(Icons.attach_file),
