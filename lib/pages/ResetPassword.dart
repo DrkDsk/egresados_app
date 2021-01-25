@@ -1,11 +1,11 @@
 import 'package:app_egresados/errorPages/ErrorPage.dart';
+import 'package:app_egresados/widgets/Header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
-import 'Registro.dart';
 
 class ResetPassword extends StatefulWidget{
   @override
@@ -16,6 +16,7 @@ class _ResetPasswordPage extends State<ResetPassword>{
 
   final formKey = GlobalKey<FormState>();
 
+  TextEditingController controllertoken = new TextEditingController();
   TextEditingController controllerEmail = new TextEditingController();
   TextEditingController controllerPassword1 = new TextEditingController();
   TextEditingController controllerPassword2 = new TextEditingController();
@@ -26,10 +27,7 @@ class _ResetPasswordPage extends State<ResetPassword>{
 
   void hideShow(){setState(() {_obscureText = !_obscureText;});}
 
-  resetPassword(String email, String password, String password2) async {
-
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String token = sharedPreferences.getString("emailToReset");
+  resetPassword(String token,String email, String password, String password2) async {
 
     Map data = {
       'email' : email,
@@ -38,22 +36,34 @@ class _ResetPasswordPage extends State<ResetPassword>{
     };
     if(password == password2){
       try{
-        var response = await http.post("http://192.168.1.68:8000/api/update/password",body: data);
+        var response = await http.post("http://ittgegresados.online/api/update/password",body: data);
         if(response.statusCode == 200){
           var jsonResponse = json.decode(response.body);
           if(jsonResponse != null){
+            SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+            sharedPreferences.clear();
             setState(() { isLoading = false; });
             Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (Route <dynamic> route) => false);
           }
         }
         else if(response.statusCode == 401){
-          isLoading = false;
-          setState(() {mensaje = "Correo electrónico Inválido";});
+          setState(() {
+            isLoading = false;
+            mensaje = "Token O Correo Electrónico Inválido";
+          });
+          return;
         }
       }
       catch(e){
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
       }
+    }
+    else{
+      setState(() {
+        isLoading = false;
+        mensaje = "Contraseñas no coinciden";
+      });
+      return ;
     }
   }
 
@@ -63,47 +73,22 @@ class _ResetPasswordPage extends State<ResetPassword>{
       resizeToAvoidBottomPadding: false,
       appBar: new AppBar(title: Text('Reiniciar Contraseña')),
       body: Container(
-        child: isLoading ? Center(child: CircularProgressIndicator()) : ListView(
+        child: isLoading ? Center(child: CircularProgressIndicator()) :
+        Flex(
+          direction: Axis.horizontal,
           children: [
-            header(),
-            formSection(),
-            mensajeSection(),
-            buttonsection(),
+            Expanded(child: ListView(
+              children: [
+                Header(),
+                textForm(),
+                formSection(),
+                mensajeSection(),
+                buttonsection(),
+                SizedBox(height: 50,)
+              ],
+            ))
           ],
         ),
-      ),
-    );
-  }
-
-  Container mensajeSection(){
-    return Container(
-      child: Center(
-        child: Text(mensaje,style: TextStyle(
-            color: Colors.red,
-            fontSize: 15
-        ),),
-      ),
-    );
-  }
-
-  Container buttonsection(){
-    return Container(
-      child: Column(
-        children: [
-          RaisedButton(
-            child: Text('Actualizar Contraseña',style: TextStyle(
-                color: Colors.blue,
-                fontSize: 20
-            ),),
-            onPressed: (){
-              if(formKey.currentState.validate()){
-                setState(() {isLoading = true;
-                });
-                resetPassword(controllerEmail.text, controllerPassword1.text, controllerPassword2.text);
-              }
-            },
-          ),
-        ],
       ),
     );
   }
@@ -112,7 +97,7 @@ class _ResetPasswordPage extends State<ResetPassword>{
     return Form(
       key: formKey,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 15.0,vertical:15.0),
+        padding: EdgeInsets.symmetric(horizontal: 20.0,vertical:15.0),
         child: Column(
           children: [
             Padding(
@@ -140,6 +125,23 @@ class _ResetPasswordPage extends State<ResetPassword>{
                           ),
                           child: TextFormField(
                             validator: (value){
+                              if(value.isEmpty) return "Token Requerido";
+                              return null;
+                            },
+                            controller: controllertoken,
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: 'Token',
+                                hintStyle: TextStyle(color: Colors.blue[700])
+                            ),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
+                          child: TextFormField(
+                            validator: (value){
                               if(value.isEmpty) return "Email Requerido";
                               return null;
                             },
@@ -152,6 +154,9 @@ class _ResetPasswordPage extends State<ResetPassword>{
                           ),
                         ),
                         Container(
+                          decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                          ),
                           child: Column(
                             children: [
                               Container(
@@ -210,5 +215,54 @@ class _ResetPasswordPage extends State<ResetPassword>{
     );
   }
 
+  Container textForm(){
+    return Container(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.0),
+          child: Text(
+              'Ingresa el Token que ha llegado a tu correo electrónico'
+          ),
+        ),
+      ),
+    );
+  }
 
+  Container mensajeSection(){
+    return Container(
+      child: Center(
+        child: Text(mensaje,style: TextStyle(
+          color: Colors.red,
+          fontSize: 15,
+          fontWeight: FontWeight.bold
+        ),),
+      ),
+    );
+  }
+
+  Container buttonsection(){
+    return Container(
+      child: Column(
+        children: [
+          RaisedButton(
+            color: Colors.lightBlue.shade600,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.lightBlue.shade600)
+            ),
+            child: Text('Actualizar Contraseña',style: TextStyle(
+                color: Colors.white,
+                fontSize: 20
+            ),),
+            onPressed: (){
+              if(formKey.currentState.validate()){
+                setState(() {isLoading = true;});
+                resetPassword(controllertoken.text, controllerEmail.text, controllerPassword1.text, controllerPassword2.text);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:app_egresados/errorPages/ErrorPage.dart';
+import 'package:app_egresados/widgets/Header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'Registro.dart';
 import 'ResetPassword.dart';
-import 'login.dart';
+import 'Login.dart';
 
 class SendEmail extends StatefulWidget{
   @override
@@ -21,19 +20,24 @@ class _SendEmail extends State<SendEmail>{
   TextEditingController controllerEmail = new TextEditingController();
 
   sendMail(String email) async{
-
+    setState(() { isLoading = true; });
     Map data = {'email' : email};
 
     try{
-      var response = await http.post("http://192.168.1.68:8000/api/reset/password",body: data);
+      var response = await http.post("http://ittgegresados.online/api/reset/password",body: data);
       if(response.statusCode == 200){
         var jsonResponse = json.decode(response.body);
         if(jsonResponse != null){
           setState(() { isLoading = false; });
-          SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-          sharedPreferences.setString("emailToReset", jsonResponse['email']);
           Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => ResetPassword()), (Route <dynamic> route) => false);
         }
+      }
+      else if(response.statusCode == 401){
+        setState(() {
+          isLoading = false;
+          mensaje = "Correo Electrónico No Registrado";
+        });
+        return ;
       }
     }
     catch(e){
@@ -51,13 +55,20 @@ class _SendEmail extends State<SendEmail>{
         title: Text('Recuperar Cuenta'),
       ),
       body: Container(
-        child: isLoading ? Center(child: CircularProgressIndicator()) : ListView(
+        child: isLoading ? Center(child: CircularProgressIndicator()) :
+        Flex(
+          direction: Axis.horizontal,
           children: [
-            header(),
-            textSendEmail(),
-            textForm(),
-            form(),
-            mensajeSection()
+            Expanded(child: ListView(
+              children: [
+                Header(),
+                textSendEmail(),
+                textForm(),
+                form(),
+                mensajeSection(),
+                SizedBox(height: 50,)
+              ],
+            ))
           ],
         ),
       ),
@@ -110,7 +121,7 @@ class _SendEmail extends State<SendEmail>{
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(20),
               child: Column(
                 children: [
                   Container(
@@ -151,13 +162,17 @@ class _SendEmail extends State<SendEmail>{
                   SizedBox(height: 50),
                   Container(
                     child: RaisedButton(
+                      color: Colors.blue.shade800,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                          side: BorderSide(color: Colors.blue.shade800)
+                      ),
                       child: Text('Enviar Correo Electrónico',style: TextStyle(
-                        color: Colors.blue,
+                        color: Colors.white,
                         fontSize: 20,
                       ),),
                       onPressed: (){
                         if(formKey.currentState.validate()){
-                          setState(() { isLoading = true; });
                           sendMail(controllerEmail.text);
                         }
                       },

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:app_egresados/errorPages/ErrorPage.dart';
 import 'package:app_egresados/pages/Registro.dart';
+import 'package:app_egresados/widgets/Header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -33,7 +34,7 @@ class _LoginPageState extends State<LoginPage>{
     };
 
     try{
-      var response = await http.post("http://192.168.1.68:8000/api/login",body: data);
+      var response = await http.post("http://ittgegresados.online/api/login",body: data);
       if(response.statusCode == 200){
         var jsonResponse = json.decode(response.body);
         if(jsonResponse != null){
@@ -61,15 +62,25 @@ class _LoginPageState extends State<LoginPage>{
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       body: Container(
-        child: isLoading ? Center(child: CircularProgressIndicator()) : ListView(
-          children: <Widget>[
-            header(),
-            textInicioSesion(),
-            form(),
-            message(),
-            forgotPassword()
+        child: isLoading ? Center(child: CircularProgressIndicator()) :
+        Flex(
+          direction: Axis.horizontal,
+          children: [
+            Expanded(
+              flex: 1,
+                child: ListView(
+              children: [
+                Header(),
+                textInicioSesion(),
+                form(),
+                message(),
+                forgotPassword(),
+                SizedBox(height: 50,)
+              ],
+            ))
           ],
-        ),
+        )
+        ,
       ),
     );
   }
@@ -162,8 +173,13 @@ class _LoginPageState extends State<LoginPage>{
                   SizedBox(height: 80,),
                   Container(
                     child: RaisedButton(
+                      color: Colors.lightBlue.shade800,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                          side: BorderSide(color: Colors.lightBlue.shade800)
+                      ),
                       child: Text('Iniciar Sesión',style: TextStyle(
-                        color: Colors.blue,
+                        color: Colors.white,
                         fontSize: 20,
                       ),),
                       onPressed: (){
@@ -178,8 +194,13 @@ class _LoginPageState extends State<LoginPage>{
                   ),
                   Container(
                     child: RaisedButton(
+                      color: Colors.lightBlue.shade300,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                          side: BorderSide(color: Colors.lightBlue.shade200)
+                      ),
                       child: Text('Registrarse',style: TextStyle(
-                        color: Colors.blue,
+                        color: Colors.white,
                         fontSize: 20
                       ),),
                       onPressed: (){
@@ -201,7 +222,8 @@ class _LoginPageState extends State<LoginPage>{
       child: Center(child: Text(
         mensaje,
         style: TextStyle(
-          color: Colors.red
+          color: Colors.red,
+          fontWeight: FontWeight.bold
         ),
       ),),
     );
@@ -216,8 +238,9 @@ class _LoginPageState extends State<LoginPage>{
           },
           child: Text("Olvidaste Tu Contraseña?",
               style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontWeight: FontWeight.bold
+                fontSize: 18,
+                color: Colors.lightBlueAccent,
+                fontWeight: FontWeight.bold
               )),
         ),
       ),

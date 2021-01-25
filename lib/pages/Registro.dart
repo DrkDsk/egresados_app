@@ -1,11 +1,12 @@
 import 'package:app_egresados/errorPages/ErrorPage.dart';
+import 'package:app_egresados/widgets/Header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
-import 'login.dart';
+import 'Login.dart';
 
 class Register extends StatefulWidget{
   @override
@@ -34,7 +35,7 @@ class _RegisterPage extends State<Register>{
     };
     if(password == password2){
       try{
-        var response = await http.post("http://192.168.1.68:8000/api/register",body: data);
+        var response = await http.post("http://ittgegresados.online/api/register",body: data);
         if(response.statusCode == 200){
           var jsonResponse = json.decode(response.body);
           if(jsonResponse != null){
@@ -49,6 +50,7 @@ class _RegisterPage extends State<Register>{
           setState(() {
             isLoading = false;
             mensaje = "Usuario Registrado";
+            return ;
           });
         }
       }
@@ -59,6 +61,7 @@ class _RegisterPage extends State<Register>{
     else{setState(() {
         isLoading = false;
         mensaje = "Contraseñas no coinciden";
+        return;
       });
     }
   }
@@ -70,11 +73,12 @@ class _RegisterPage extends State<Register>{
       body: Container(
         child: isLoading ? Center(child: CircularProgressIndicator()) : ListView(
           children: [
-            header(),
+            Header(),
             textRegistro(),
             formSection(),
             mensajeSection(),
             buttonsection(),
+            SizedBox(height: 50,)
           ],
         ),
       ),
@@ -137,6 +141,9 @@ class _RegisterPage extends State<Register>{
                           ),
                         ),
                         Container(
+                        decoration: BoxDecoration(
+                        border: Border(bottom: BorderSide(color: Colors.grey[100]))
+                        ),
                           child: Column(
                             children: [
                               Container(
@@ -200,8 +207,13 @@ class _RegisterPage extends State<Register>{
       child: Column(
         children: [
           RaisedButton(
-            child: Text('Registrar',style: TextStyle(
-              color: Colors.blue,
+          color: Colors.lightBlue.shade300,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.lightBlue.shade200)
+            ),
+            child: Text('Registrarse',style: TextStyle(
+              color: Colors.white,
               fontSize: 20
             ),),
           onPressed: (){
@@ -214,8 +226,13 @@ class _RegisterPage extends State<Register>{
           },
           ),
           RaisedButton(
+              color: Colors.lightBlue.shade800,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                  side: BorderSide(color: Colors.lightBlue.shade800)
+              ),
             child: Text('Iniciar Sesión',style: TextStyle(
-              color: Colors.blue,
+              color: Colors.white,
               fontSize: 20
             )),
             onPressed: (){
@@ -232,22 +249,10 @@ class _RegisterPage extends State<Register>{
       child: Center(
         child: Text(mensaje,style: TextStyle(
           color: Colors.red,
-          fontSize: 15
+          fontSize: 15,
+          fontWeight: FontWeight.bold
         ),),
       ),
     );
   }
-}
-
-Container header(){
-  return Container(
-    margin: EdgeInsets.only(top: 40.0),
-    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-    height: 100,
-    decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/ittg_logo.png'),
-        )
-    ),
-  );
 }

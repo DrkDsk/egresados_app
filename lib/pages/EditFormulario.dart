@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:app_egresados/errorPages/ErrorPage.dart';
+import 'package:app_egresados/modelos/RequestResponseEstadoTramite_model.dart';
+import 'package:app_egresados/widgets/Header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +26,8 @@ class _EditFormularioPage extends State<EditFormulario>{
   DateTime _dateTimeInicio;
   DateTime _dateTimeEgreso;
 
+  List<ReqResRespuestaEstadoTramite> datos;
+
   TextEditingController controllerName = new TextEditingController();
   TextEditingController controllerApellidoPaterno = new TextEditingController();
   TextEditingController controllerApellidoMaterno = new TextEditingController();
@@ -30,12 +35,18 @@ class _EditFormularioPage extends State<EditFormulario>{
   TextEditingController controllerMovil = new TextEditingController();
   TextEditingController controllerTelefonoCasa = new TextEditingController();
   TextEditingController controllerEmailAlternativo = new TextEditingController();
-  TextEditingController controllerCarrera = new TextEditingController();
 
-  String _carreras_valor = "Seleccionar carrera";
+  String _carreras_valor = "";
   String mensaje = "";
   String email = "";
   String telefono_casa = "";
+
+  String name = "";
+  String apellido = "";
+  String apellido2 = "";
+  String noControl = "";
+
+  List<String> data = [];
 
   List _carreras = [
     "Ing. En Sistemas Computacionales",
@@ -49,6 +60,11 @@ class _EditFormularioPage extends State<EditFormulario>{
     "Ing. Logística",
   ];
 
+  void initState(){
+    super.initState();
+    getData();
+  }
+
   void hideMailAlternativo(){
     setState(() { visibleMailAlternativo = !visibleMailAlternativo; });
   }
@@ -56,20 +72,50 @@ class _EditFormularioPage extends State<EditFormulario>{
     setState(() {visibleTelefonoCasa = !visibleTelefonoCasa;});
   }
 
-  formulario() async{
-
-    print("carrera:" + _carreras_valor);
-    print("dateInicio" + _dateTimeInicio.toString());
-    print("dateEgre" + _dateTimeEgreso.toString());
-
+   getData() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
+    String token = sharedPreferences.getString("token");
+    final response = await http.get("http://ittgegresados.online/api/estadoFormulario/"+id,
+        headers: {'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': 'Bearer $token'});
+
+    Map <String, dynamic>  responseJson = json.decode(response.body);
+
+    controllerName.text = responseJson["data"]["name"];
+    controllerApellidoPaterno.text = responseJson["data"]["apellido1"];
+    controllerApellidoMaterno.text = responseJson["data"]["apellido2"];
+    controllerNumeroDeControl.text = responseJson["data"]["noControl"];
+    controllerMovil.text = responseJson["data"]["movil"];
+    controllerTelefonoCasa.text = responseJson["data"]["telefono_casa"];
+    controllerEmailAlternativo.text = responseJson["data"]["email_alternativo"];
+    _carreras_valor = responseJson["data"]["carrera"];
+    setState(() {});
+  }
+
+  formulario() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String id = sharedPreferences.getInt('id').toString();
+    String token = sharedPreferences.getString("token");
 
     email = controllerEmailAlternativo.text;
     telefono_casa = controllerTelefonoCasa.text;
 
-    if (!visibleMailAlternativo) email = "";
-    if (!visibleTelefonoCasa) telefono_casa = "";
+    if (visibleMailAlternativo == false) email = "";
+    if (visibleTelefonoCasa == false) telefono_casa = "";
+
+    if(_carreras_valor.isEmpty){
+      setState(() {mensaje = "Seleccione Su Carrera";});
+      return ;
+    }
+
+    if(_dateTimeEgreso == null || _dateTimeInicio == null){
+      setState(() {mensaje = "Selecciona Tu Fecha de Ingreso Y Egreso";});
+      return ;
+    }
+
+    setState(() {isLoading = true;});
 
     Map data = {
       'name' : controllerName.text,
@@ -85,7 +131,13 @@ class _EditFormularioPage extends State<EditFormulario>{
     };
 
     try{
-      final response = await http.patch("http://192.168.1.68:8000/api/updateFormulario/"+id,body: data);
+      print(token);
+      final response = await http.patch("http://ittgegresados.online/api/updateFormulario/"+id,body: jsonEncode(data),
+          headers: {'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'}
+      );
+
       if(response.statusCode == 200){
         setState(() { isLoading = false; });
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute (builder: (BuildContext context) => MyHomePage()), (Route<dynamic>route) => false);
@@ -93,7 +145,7 @@ class _EditFormularioPage extends State<EditFormulario>{
       else if(response.statusCode == 401){
         setState(() {
           isLoading = false;
-          mensaje = "No se puede actualizar el formulario, \nCargar de nuevo la Sección 'Formulario'";
+          mensaje = "No se puede Actualizar el Formulario, \nCargar de nuevo la Sección 'Formulario'";
         });
       }
     }
@@ -107,26 +159,38 @@ class _EditFormularioPage extends State<EditFormulario>{
     return Scaffold(
       appBar: new AppBar(title: Text('Editar Formulario'),),
       drawer: MyDrawer(),
-      resizeToAvoidBottomPadding: false,
       body: Container(
         child: buttonEdit ? Center(child: isLoading ? Center(child: CircularProgressIndicator()):
-        ListView(
+        Flex(
+          direction: Axis.horizontal,
           children: [
-            header(),
-            formuRegistro(),
-            formSection(),
-            selectCarrera(),
-            selectFechaIngreso(),
-            selectFechaEgreso(),
-            buttonsection(),
-            messajeSection()
+            Expanded(
+                child: ListView(
+                  children: [
+                    Header(),
+                    formuRegistro(),
+                    formSection(),
+                    selectCarrera(),
+                    selectFechaIngreso(),
+                    selectFechaEgreso(),
+                    buttonsection(),
+                    messageSection(),
+                    SizedBox(height: 50,)
+                  ],
+                ))
           ],
         )
-        ) : ListView(
+        ) : Flex(
+          direction: Axis.horizontal,
           children: [
-            header(),
-            editarMessage(),
-            editarButton()
+            Expanded(child: ListView(
+              children: [
+                Header(),
+                editarMessage(),
+                editarButton(),
+                SizedBox(height: 50,)
+              ],
+            ))
           ],
         )
       ),
@@ -135,8 +199,13 @@ class _EditFormularioPage extends State<EditFormulario>{
 
   Container editarMessage(){
     return Container(
+        margin: EdgeInsets.symmetric(vertical: 30, horizontal: 30),
+        decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20)),
+        color: Colors.white, boxShadow: [
+          BoxShadow( color: Colors.black.withAlpha(100), blurRadius: 10.0)
+          ]),
         height: 100,
-        padding: EdgeInsets.only(left: 60, right: 40),
+        padding: EdgeInsets.only(left: 20),
         child: Center(
           child: Text('Tu formulario ya ha sido registrado, si deseas actualizar '
               'tu información, presiona el siguiente botón',style: TextStyle(
@@ -154,26 +223,18 @@ class _EditFormularioPage extends State<EditFormulario>{
       child: Column(
         children: [
           RaisedButton(
+            color: Colors.green.shade300,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.green.shade300)
+            ),
             onPressed: (){setState(() {buttonEdit = !buttonEdit;});},
             child: Text("Editar Formulario",style: TextStyle(
-                color: Colors.green,
-                fontSize: 20
+                color: Colors.white,
+                fontSize: 25
             ),),
           )
         ],
-      ),
-    );
-  }
-
-  Container header(){
-    return Container(
-      margin: EdgeInsets.only(top: 40.0),
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-      height: 100,
-      decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/ittg_logo.png'),
-          )
       ),
     );
   }
@@ -182,10 +243,14 @@ class _EditFormularioPage extends State<EditFormulario>{
     return Container(
         margin: EdgeInsets.only(top: 30),
         height: 40,
-        child: Center(
-          child: Text('Registro de formulario',style: TextStyle(
-              fontSize: 30
-          )),
+        child: Column(
+          children: [
+            Expanded(child: Text(
+                'Actualización de formulario',style: TextStyle(
+                fontSize: 28
+            )
+            ))
+          ],
         )
     );
   }
@@ -275,6 +340,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                             children: [
                               Container(
                                 child: TextFormField(
+                                  maxLength: 8,
                                   validator: (value){
                                     if(value.isEmpty) return "Número de Control requerido";
                                     return null;
@@ -296,7 +362,8 @@ class _EditFormularioPage extends State<EditFormulario>{
                             children: [
                               Container(
                                 child: TextFormField(
-                                  keyboardType: TextInputType.number,
+                                  maxLength: 10,
+                                  keyboardType: TextInputType.phone,
                                   validator: (value){
                                     if(value.isEmpty) return "Teléfono móvil requerido";
                                     return null;
@@ -312,15 +379,16 @@ class _EditFormularioPage extends State<EditFormulario>{
                             ],
                           ),
                         ),
-                        Row(
+                        Wrap(
+                          alignment: WrapAlignment.start,
                           children: [
                             Container(
-                              width: 150,
                               child: Visibility(
                                 visible: visibleTelefonoCasa,
                                 child: Container(
                                   child: TextFormField(
-                                    keyboardType: TextInputType.number,
+                                    maxLength: 10,
+                                    keyboardType: TextInputType.phone,
                                     validator: (value){
                                       if(value.isEmpty) return "Teléfono de Casa Requerido";
                                       return null;
@@ -341,23 +409,27 @@ class _EditFormularioPage extends State<EditFormulario>{
                                 hideTelefonoCasa();
                               },
                             ),
-                            InkWell(
-                              child: Text("(Teléfono de Casa)",
-                                style: TextStyle(
-                                    color: Colors.lightBlueAccent,
-                                    fontWeight: FontWeight.bold
-                                ),),
-                            )
+                            Container(
+                              padding: EdgeInsets.all(15),
+                              child: InkWell(
+                                child: Text("(Teléfono de Casa)",
+                                  style: TextStyle(
+                                      color: Colors.lightBlueAccent,
+                                      fontWeight: FontWeight.bold
+                                  ),),
+                              ),
+                            ),
                           ],
                         ),
-                        Row(
+                        Wrap(
+                          alignment: WrapAlignment.start,
                           children: [
                             Container(
-                              width: 150,
                               child: Visibility(
-                                visible: visibleMailAlternativo,
+                                visible: visibleTelefonoCasa,
                                 child: Container(
                                   child: TextFormField(
+                                    keyboardType: TextInputType.emailAddress,
                                     validator: (value){
                                       if(value.isEmpty) return "Correo Electrónico Alternativo Requerido";
                                       return null;
@@ -375,18 +447,21 @@ class _EditFormularioPage extends State<EditFormulario>{
                             Checkbox(
                               value: visibleMailAlternativo,
                               onChanged: (v){
-                                hideMailAlternativo();
+                                hideTelefonoCasa();
                               },
                             ),
-                            InkWell(
-                              child: Text("(Email Alternativo)",
-                                style: TextStyle(
-                                    color: Colors.lightBlueAccent,
-                                    fontWeight: FontWeight.bold
-                                ),),
-                            )
+                            Container(
+                              padding: EdgeInsets.all(15),
+                              child: InkWell(
+                                child: Text("(Email Alternativo)",
+                                  style: TextStyle(
+                                      color: Colors.lightBlueAccent,
+                                      fontWeight: FontWeight.bold
+                                  ),),
+                              ),
+                            ),
                           ],
-                        ),
+                        )
                       ],
                     ),
                   )
@@ -419,10 +494,40 @@ class _EditFormularioPage extends State<EditFormulario>{
     );
   }
 
+  Container selectFechaIngreso(){
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 120),
+      child: RaisedButton(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.0),
+            side: BorderSide(color: Colors.blue)
+        ),
+        color: Colors.blue,
+        onPressed: (){
+          showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime(2001),
+              lastDate: DateTime(2050))
+              .then((date){
+            setState(() {
+              _dateTimeInicio = date;
+            });
+          });
+        },
+        child: _dateTimeInicio == null ? Text("Fecha de Inicio",style: TextStyle(color: Colors.white),) : Text("Año de Ingreso: " + _dateTimeInicio.year.toString(),style: TextStyle(color: Colors.white),),
+      ),
+    );
+  }
+
   Container selectFechaEgreso(){
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 120),
       child: RaisedButton(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18.0),
+            side: BorderSide(color: Colors.blue)
+        ),
         color: Colors.blue,
         onPressed: (){
           showDatePicker(
@@ -436,67 +541,58 @@ class _EditFormularioPage extends State<EditFormulario>{
             });
           });
         },
-        child: _dateTimeEgreso == null ? Text("Fecha de Egreso") : Text("Año de Egreso: " + _dateTimeEgreso.year.toString()),
-      ),
-    );
-  }
-
-  Container selectFechaIngreso(){
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 120),
-      child: RaisedButton(
-        color: Colors.blue,
-        onPressed: (){
-          showDatePicker(
-              cancelText: "Cancelar",
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2001),
-              lastDate: DateTime(2050))
-              .then((date){
-            setState(() {
-              _dateTimeInicio = date;
-            });
-          });
-        },
-        child: _dateTimeInicio == null ? Text("Fecha de Inicio") : Text("Año de Ingreso: " + _dateTimeInicio.year.toString()),
+        child: _dateTimeEgreso == null ? Text("Fecha de Egreso",style: TextStyle(color: Colors.white),) : Text("Año de Egreso: " + _dateTimeEgreso.year.toString(),style: TextStyle(color: Colors.white),),
       ),
     );
   }
 
   Container buttonsection(){
     return Container(
+      padding: EdgeInsets.all(10),
       child: Column(
         children: [
           RaisedButton(
+              shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.green.shade300)
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+            color: Colors.green.shade300,
             child: Text('Actualizar',style: TextStyle(
-                color: Colors.blue,
+                color: Colors.white,
                 fontSize: 20
             )),
             onPressed: (){
               if(formKey.currentState.validate()){
-                setState(() {isLoading = true;});
                 formulario();
               }
             },
           ),
+          SizedBox(height: 10),
           RaisedButton(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0),
+                side: BorderSide(color: Colors.red)
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            color: Colors.red.shade400,
             onPressed: (){setState(() {buttonEdit = !buttonEdit;});},
             child: Text("Cancelar",style: TextStyle(
                 fontSize: 20,
-                color: Colors.red)),
+                color: Colors.white)),
           )
         ],
       ),
     );
   }
 
-  Container messajeSection(){
+  Container messageSection(){
     return Container(
       child: Center(
         child: Text(mensaje,style: TextStyle(
-            color: Colors.red,
-            fontSize: 15
+          fontWeight: FontWeight.w400,
+          color: Colors.red,
+          fontSize: 16,
         ),),
       ),
     );
