@@ -19,7 +19,7 @@ class _TramiteView extends State<Tramites>{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
     String token = sharedPreferences.getString("token");
-    var tramites = await http.get("http://ittgegresados.online/api/getTramites/"+id,
+    var tramites = await http.get("http://192.168.1.68:8000/api/getTramites/"+id,
         headers: {'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': 'Bearer $token'});
@@ -170,7 +170,7 @@ class _ListaTramites extends StatelessWidget{
   }
 }
 
-showAlertDialogError(BuildContext context, String mensaje, String tramite){
+showAlertDialogError(BuildContext context,String tramite){
 
   Widget closeButton = FlatButton(
     child: Text("Cerrar",style: TextStyle(
@@ -223,7 +223,7 @@ showAlertDialog(BuildContext context,String tramite){
     String token = sharedPreferences.getString("token");
     Map data = {'tipo':nameTramite, 'id':id};
 
-    var tramite = await http.post("http://ittgegresados.online/api/postTramite",body: jsonEncode(data),
+    var tramite = await http.post("http://192.168.1.68:8000/api/postTramite",body: jsonEncode(data),
         headers: {'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $token'});
@@ -233,9 +233,13 @@ showAlertDialog(BuildContext context,String tramite){
       showToast(context,mensaje,nameTramite);
       Navigator.pop(context);
     }
+    else if(tramite.statusCode == 202){
+        var mensaje = json.decode(tramite.body)[0];
+        showToast(context, mensaje, "");
+        return ;
+    }
     else{
-      var mensaje = "El Trámite: ya ha sido Solicitado";
-      showAlertDialogError(context, mensaje, nameTramite);
+      showAlertDialogError(context, nameTramite);
     }
   }
 
