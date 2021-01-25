@@ -1,4 +1,5 @@
-import 'package:app_egresados/models/RequestResponseCitas_model.dart';
+import 'package:app_egresados/modelos/RequestResponseCitas_model.dart';
+import 'package:app_egresados/widgets/Header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +16,13 @@ class _CitasView extends State<Citas>{
   Future<ReqResRespuesta> getCitas() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
-    final citas = await http.get("http://192.168.1.68:8000/api/getCitas/"+id);
+    String token = sharedPreferences.getString("token");
+
+    final citas = await http.get("http://ittgegresados.online/api/getCitas/"+id,
+        headers: {'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'}
+    );
     return reqResRespuestaFromJson(citas.body);
   }
 
@@ -30,6 +37,38 @@ class _CitasView extends State<Citas>{
               builder: (BuildContext context, AsyncSnapshot<ReqResRespuesta> snapshot){
                 if(snapshot.connectionState == ConnectionState.waiting){
                   return Center(child: CircularProgressIndicator());
+                }
+                if(snapshot.data == null){
+                  return Column(
+                      children: [
+                        Header(),
+                        Center(
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(20)),
+                                color: Colors.white, boxShadow: [
+                                  BoxShadow(color: Colors.black.withAlpha(100),blurRadius: 10.0)
+                                ]),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                              child: Wrap(
+                                spacing: 8.0,
+                                runSpacing: 4.0,
+                                direction: Axis.horizontal,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("No Tienes Citas Asignadas, No Hay Trámites Solicitados",style: TextStyle(fontSize: 22, color: Colors.red.shade300, fontWeight: FontWeight.bold)),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
+                  );
                 }
                 else{
                   return _ListaCitas(snapshot.data.data);
@@ -93,6 +132,7 @@ class _ListaCitas extends StatelessWidget{
     else{
       return Column(
             children: [
+              Header(),
               Center(
                 child: Container(
                   margin: EdgeInsets.only(top: 40.0),
