@@ -146,7 +146,7 @@ class _FormularioView extends State<ViewFormulario>{
           return ;
         });
       }
-      else if(response.statusCode == 202){
+      else if(response.statusCode == 400){
         setState(() {
           isLoading = false;
           mensaje = json.decode(response.body)[0];
@@ -306,7 +306,7 @@ class _FormularioView extends State<ViewFormulario>{
                                 child: TextFormField(
                                   maxLength: 8,
                                   validator: (value){
-                                    if(value.isEmpty) return "Número de Control requerido";
+                                    if(value.isEmpty || value.length != 8) return "Número de Control requerido a 8 Dígitos";
                                     return null;
                                   },
                                   keyboardType: TextInputType.number,
