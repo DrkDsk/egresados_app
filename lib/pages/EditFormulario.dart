@@ -131,7 +131,6 @@ class _EditFormularioPage extends State<EditFormulario>{
     };
 
     try{
-      print(token);
       final response = await http.patch("http://192.168.1.68:8000/api/updateFormulario/"+id,body: jsonEncode(data),
           headers: {'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -147,7 +146,7 @@ class _EditFormularioPage extends State<EditFormulario>{
           mensaje = "No se puede Actualizar el Formulario, \nCargar de nuevo la Sección 'Formulario'";
         });
       }
-      else if(response.statusCode == 202){
+      else if(response.statusCode == 400){
         setState(() {
           isLoading = false;
           mensaje = json.decode(response.body)[0];
@@ -360,7 +359,7 @@ class _EditFormularioPage extends State<EditFormulario>{
                                 child: TextFormField(
                                   maxLength: 8,
                                   validator: (value){
-                                    if(value.isEmpty) return "Número de Control requerido";
+                                    if(value.isEmpty || value.length != 8) return "Número de Control requerido a 8 Dígitos";
                                     return null;
                                   },
                                   keyboardType: TextInputType.number,
