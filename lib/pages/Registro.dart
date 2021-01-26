@@ -53,6 +53,13 @@ class _RegisterPage extends State<Register>{
             return ;
           });
         }
+        else if(response.statusCode == 400){
+          setState(() {
+            isLoading = false;
+            mensaje = json.decode(response.body)[0];
+            return ;
+          });
+        }
       }
       catch (e){
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => PageError()), (Route <dynamic> route) => false);
