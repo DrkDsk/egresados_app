@@ -49,6 +49,10 @@ _Trámites Disponibles_
 _Solicitando Trámite_
 ![solicitar_tramites](https://user-images.githubusercontent.com/45542462/108247345-217e2100-7118-11eb-8251-0011f74339ea.jpg)
 
+_Trámite Solicitado_
+
+![trámite_solicitado](https://user-images.githubusercontent.com/45542462/108249864-3314f800-711b-11eb-979b-1b42f731086b.jpg)
+
 _Sin Trámites Disponibles_
 ![sin_tramites](https://user-images.githubusercontent.com/45542462/108247253-03b0bc00-7118-11eb-8d5d-2cb191841742.jpg)
 
