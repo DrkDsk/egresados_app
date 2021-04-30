@@ -76,11 +76,10 @@ class _EditFormularioPage extends State<EditFormulario>{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
     String token = sharedPreferences.getString("token");
-    final response = await http.get("http://192.168.1.68:8000/api/estadoFormulario/"+id,
+    final response = await http.get(Uri.parse("http://192.168.1.74:8000/api/estadoFormulario/"+id),
         headers: {'Content-Type': 'application/json',
                   'Accept': 'application/json',
                   'Authorization': 'Bearer $token'});
-
     Map <String, dynamic>  responseJson = json.decode(response.body);
 
     controllerName.text = responseJson["data"]["name"];
@@ -131,7 +130,7 @@ class _EditFormularioPage extends State<EditFormulario>{
     };
 
     try{
-      final response = await http.patch("http://192.168.1.68:8000/api/updateFormulario/"+id,body: jsonEncode(data),
+      final response = await http.patch(Uri.parse("http://192.168.1.74:8000/api/updateFormulario/"+id),body: jsonEncode(data),
           headers: {'Content-Type': 'application/json',
         'Accept': 'application/json',
         'Authorization': 'Bearer $token'}

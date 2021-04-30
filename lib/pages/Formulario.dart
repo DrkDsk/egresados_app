@@ -37,8 +37,6 @@ class _FormularioView extends State<ViewFormulario>{
 
   String _carreras_valor = "";
   String mensaje = "";
-  String email = "";
-  String telefono_casa = "";
 
   List _carreras = [
     "Ing. En Sistemas Computacionales",
@@ -71,7 +69,7 @@ class _FormularioView extends State<ViewFormulario>{
 
     setState(() {isLoading = true;});
     try{
-      var response = await http.get('http://192.168.1.68:8000/api/estadoFormulario/'+id,
+      var response = await http.get(Uri.parse("http://192.168.1.74:8000/api/estadoFormulario/"+id),
           headers: {'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer $token'});
@@ -97,8 +95,8 @@ class _FormularioView extends State<ViewFormulario>{
     String id = sharedPreferences.getInt('id').toString();
     String token = sharedPreferences.getString("token");
 
-    email = controllerEmailAlternativo.text;
-    telefono_casa = controllerTelefonoCasa.text;
+    String email = controllerEmailAlternativo.text;
+    String telefono_casa = controllerTelefonoCasa.text;
 
     if (visibleMailAlternativo == false) email = "";
     if (visibleTelefonoCasa == false) telefono_casa = "";
@@ -130,7 +128,7 @@ class _FormularioView extends State<ViewFormulario>{
     };
 
     try{
-      final response = await http.post("http://192.168.1.68:8000/api/formulario",body: jsonEncode(data),
+      final response = await http.post(Uri.parse("http://192.168.1.74:8000/api/formulario"),body: jsonEncode(data),
           headers: {'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer $token'}

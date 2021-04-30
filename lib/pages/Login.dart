@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage>{
     };
 
     try{
-      var response = await http.post("http://192.168.1.68:8000/api/login",body: data);
+      var response = await http.post(Uri.parse("http://192.168.1.74:8000/api/login"),body: data);
       if(response.statusCode == 200){
         var jsonResponse = json.decode(response.body);
         if(jsonResponse != null){
@@ -60,8 +60,8 @@ class _LoginPageState extends State<LoginPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
-      body: Container(
+        resizeToAvoidBottomInset: false,
+        body: Container(
         child: isLoading ? Center(child: CircularProgressIndicator()) :
         Flex(
           direction: Axis.horizontal,

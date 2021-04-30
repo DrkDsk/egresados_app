@@ -36,7 +36,7 @@ class _ResetPasswordPage extends State<ResetPassword>{
     };
     if(password == password2){
       try{
-        var response = await http.post("http://192.168.1.68:8000/api/update/password",body: data);
+        var response = await http.post(Uri.parse("http://192.168.1.74:8000/api/update/password"),body: data);
         if(response.statusCode == 200){
           var jsonResponse = json.decode(response.body);
           if(jsonResponse != null){
@@ -70,7 +70,7 @@ class _ResetPasswordPage extends State<ResetPassword>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset: false,
       appBar: new AppBar(title: Text('Reiniciar Contraseña')),
       body: Container(
         child: isLoading ? Center(child: CircularProgressIndicator()) :

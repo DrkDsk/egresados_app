@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Citas.dart';
 import 'Formulario.dart';
 import 'Tramites.dart';
+import 'package:http/http.dart' as http;
 
 class MyDrawer extends StatefulWidget{
   @override
@@ -38,6 +39,11 @@ class _MyDrawer extends State<MyDrawer> {
   void logOut() async{
     try{
       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      String token = sharedPreferences.getString("token");
+      await http.post(Uri.parse("http://192.168.1.74:8000/api/postTramite"),
+          headers: {'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token'});
       sharedPreferences.clear();
       setState(() {isLoading = false;});
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => MyHomePage()), (route) => false);

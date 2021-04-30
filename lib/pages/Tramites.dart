@@ -19,7 +19,7 @@ class _TramiteView extends State<Tramites>{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String id = sharedPreferences.getInt('id').toString();
     String token = sharedPreferences.getString("token");
-    var tramites = await http.get("http://192.168.1.68:8000/api/getTramites/"+id,
+    var tramites = await http.get(Uri.parse("http://192.168.1.74:8000/api/getTramites/"+id),
         headers: {'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': 'Bearer $token'});
@@ -172,7 +172,7 @@ class _ListaTramites extends StatelessWidget{
 
 showAlertDialogError(BuildContext context,String tramite){
 
-  Widget closeButton = FlatButton(
+  Widget closeButton = TextButton(
     child: Text("Cerrar",style: TextStyle(
         fontSize: 20,
         color: Colors.red),),
@@ -223,7 +223,7 @@ showAlertDialog(BuildContext context,String tramite){
     String token = sharedPreferences.getString("token");
     Map data = {'tipo':nameTramite, 'id':id};
 
-    var tramite = await http.post("http://192.168.1.68:8000/api/postTramite",body: jsonEncode(data),
+    var tramite = await http.post(Uri.parse("http://192.168.1.74:8000/api/postTramite"),body: jsonEncode(data),
         headers: {'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $token'});
@@ -243,7 +243,7 @@ showAlertDialog(BuildContext context,String tramite){
     }
   }
 
-  Widget cancelButton = FlatButton(
+  Widget cancelButton = TextButton(
     child: Text("Cancelar",style: TextStyle(
         fontSize: 20,
         color: Colors.red),),
@@ -252,7 +252,7 @@ showAlertDialog(BuildContext context,String tramite){
     },
   );
 
-  Widget confirmButton = FlatButton(
+  Widget confirmButton = TextButton(
     child: Text("Confirmar",style: TextStyle(
       color: Colors.green,
       fontSize: 20
@@ -293,7 +293,7 @@ showAlertDialog(BuildContext context,String tramite){
 }
 
 showToast(BuildContext context,String mensaje,String tramite){
-  Scaffold.of(context).showSnackBar(SnackBar(
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
         mensaje + tramite
       ))

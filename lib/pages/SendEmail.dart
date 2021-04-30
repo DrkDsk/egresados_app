@@ -24,7 +24,7 @@ class _SendEmail extends State<SendEmail>{
     Map data = {'email' : email};
 
     try{
-      var response = await http.post("http://192.168.1.68:8000/api/reset/password",body: data);
+      var response = await http.post(Uri.parse("http://192.168.1.74:8000/api/reset/password"),body: data);
       if(response.statusCode == 200){
         var jsonResponse = json.decode(response.body);
         if(jsonResponse != null){
@@ -48,7 +48,7 @@ class _SendEmail extends State<SendEmail>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: BackButton(color: Colors.white,
           onPressed: () => Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => LoginPage()), (Route<dynamic> route) => false)),
